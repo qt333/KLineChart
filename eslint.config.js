@@ -29,7 +29,10 @@ export default [
       '@typescript-eslint/max-params': 'off',
       '@typescript-eslint/no-magic-numbers': 'off',
       '@typescript-eslint/prefer-destructuring': 'off',
-      'no-eval': 'off'
+      'no-eval': 'off',
+      'no-multi-spaces': 'off',
+      'semi': 'off',
+      'comma-dangle': 'off'
     }
   }
 ]

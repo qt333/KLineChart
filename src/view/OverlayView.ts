@@ -112,8 +112,25 @@ import View from './View'
 // //   }
 // // })
 
-const basicColors: string[] = ['#FF0000', '#00FF00', '#0000FF', '#FFA500', '#800080', '#000000', '#808080', '#FFFFFF']
+// const basicColors: string[] = ['#FF0000', '#00FF00', '#0000FF', '#FFA500', '#800080', '#000000', '#808080', '#FFFFFF']
+interface ColorEntry {
+  hex: string;
+  rgba: string;
+};
 
+const colorMap: ColorEntry[] = [
+  { hex: '#FF0000', rgba: 'rgba(255, 0, 0, 1)' },       // Red
+  { hex: '#00FF00', rgba: 'rgba(0, 255, 0, 1)' },       // Green
+  { hex: '#0000FF', rgba: 'rgba(0, 0, 255, 1)' },       // Blue
+  { hex: '#FFA500', rgba: 'rgba(255, 165, 0, 1)' },     // Orange
+  { hex: '#800080', rgba: 'rgba(128, 0, 128, 1)' },     // Purple
+  { hex: '#000000', rgba: 'rgba(0, 0, 0, 1)' },         // Black
+  { hex: '#808080', rgba: 'rgba(128, 128, 128, 1)' },   // Gray
+  { hex: '#FFFFFF', rgba: 'rgba(255, 255, 255, 1)' },   // White
+  { hex: '#F92855', rgba: 'rgba(249, 40, 85, 1)' },     // color.RED
+  { hex: '#2DC08E', rgba: 'rgba(45, 192, 142, 1)' },    // color.GREEN
+  { hex: '#1677FF', rgba: 'rgba(22, 119, 255, 1)' }     // color.BLUE
+];
 /**
  * Show minimal color picker.
  * @param x Horizontal position
@@ -131,17 +148,17 @@ export function showColorPopup (x: number, y: number, onSelect: (color: string) 
   popup.style.display = 'flex' // Horizontal layout
   popup.style.gap = '4px'
 
-  basicColors.forEach(color => {
+  colorMap.forEach(color => {
     const swatch = document.createElement('div')
-    swatch.style.width = '14px'
-    swatch.style.height = '14px'
-    swatch.style.backgroundColor = color
+    swatch.style.width = '15px'
+    swatch.style.height = '15px'
+    swatch.style.backgroundColor = color.hex
     swatch.style.border = '1px solid #aaa'
     swatch.style.borderRadius = '2px'
     swatch.style.cursor = 'pointer'
 
     swatch.addEventListener('click', () => {
-      onSelect(color)
+      onSelect(color.rgba)
       popup.style.display = 'none'
     })
 
@@ -467,13 +484,34 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
               size: 1,
               dashedValue: [4, 4]
             },
+            rect: {
+              // 'fill' | 'stroke' | 'stroke_fill'
+              style: 'fill',
+              color: colorSelected.replace('1)', '0.35)'),
+              borderColor: colorSelected,
+              borderSize: 1,
+              borderRadius: 0,
+              // 'solid' | 'dashed'
+              borderStyle: 'solid',
+              borderDashedValue: [2, 2]
+            },
+            polygon: {
+              // 'fill' | 'stroke' | 'stroke_fill'
+              style: 'fill',
+              color: colorSelected.replace('1)', '0.35)'),
+              borderColor: colorSelected,
+              borderSize: 1,
+              // 'solid' | 'dashed'
+              borderStyle: 'solid',
+              borderDashedValue: [2, 2]
+            },
             point: {
               color: colorSelected,
-              borderColor: 'rgba(207, 136, 23, 0.35)',
+              borderColor: colorSelected.replace('1)', '0.35)'),
               borderSize: 1,
               radius: 5,
               activeColor: colorSelected,
-              activeBorderColor: 'rgba(207, 136, 23, 0.35)',
+              activeBorderColor: colorSelected.replace('1)', '0.35)'),
               activeBorderSize: 3,
               activeRadius: 5
             }
