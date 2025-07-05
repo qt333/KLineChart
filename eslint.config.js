@@ -28,7 +28,8 @@ export default [
       '@typescript-eslint/class-methods-use-this': 'off',
       '@typescript-eslint/max-params': 'off',
       '@typescript-eslint/no-magic-numbers': 'off',
-      '@typescript-eslint/prefer-destructuring': 'off'
+      '@typescript-eslint/prefer-destructuring': 'off',
+      'no-eval': 'off'
     }
   }
 ]

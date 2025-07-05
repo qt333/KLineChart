@@ -1,5 +1,5 @@
 /**
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
 
@@ -32,6 +32,133 @@ import type DrawWidget from '../widget/DrawWidget'
 import type DrawPane from '../pane/DrawPane'
 
 import View from './View'
+
+// const basicColors: string[] = ['#FF0000', '#00FF00', '#0000FF', '#FFA500', '#800080', '#000000']
+// let selectedColor: string = basicColors[0] // Default selection
+
+// /**
+//  * Displays a color picker popup at a given position.
+//  * @param x Horizontal screen coordinate
+//  * @param y Vertical screen coordinate
+//  * @param onApply Callback to handle the selected color
+//  */
+// export function showColorPopup (x: number, y: number, onApply: (color: string) => void): void {
+//   const popup = document.getElementById('colorPopup')
+//   const options = document.getElementById('colorOptions')
+//   const applyButton = document.getElementById('applyColorBtn')
+
+//   if (popup === null || options === null || applyButton === null) {
+//     console.error('Popup elements not found in the DOM.')
+//     return
+//   }
+
+//   // Clear previous swatches
+//   options.innerHTML = ''
+
+//   basicColors.forEach((color: string) => {
+//     const swatch = document.createElement('div')
+//     swatch.style.width = '12px'
+//     swatch.style.height = '12px'
+//     swatch.style.background = color
+//     swatch.style.border = '2px solid transparent'
+//     swatch.style.cursor = 'pointer'
+//     swatch.style.borderRadius = '2px'
+
+//     swatch.addEventListener('click', () => {
+//       selectedColor = color
+
+//       // Clear selection highlight
+//       Array.from(options.children).forEach(child => {
+//         (child as HTMLElement).style.border = '2px solid transparent'
+//       })
+
+//       swatch.style.border = '2px solid #333'
+//     })
+
+//     options.appendChild(swatch)
+//   })
+
+//   // Position and show popup
+//   popup.style.left = `${x}px`
+//   popup.style.top = `${y}px`
+//   popup.style.display = 'block'
+
+//   const outsideClickHandler = (e: MouseEvent) => {
+//     if (!popup.contains(e.target as Node)) {
+//       popup.style.display = 'none'
+//       document.removeEventListener('click', outsideClickHandler)
+//     }
+//   }
+
+//   // Delay binding to avoid hiding immediately on double click
+//   setTimeout(() => {
+//     document.addEventListener('click', outsideClickHandler)
+//   }, 0)
+
+//   applyButton.onclick = () => {
+//     popup.style.display = 'none'
+//     document.removeEventListener('click', outsideClickHandler)
+//     onApply(selectedColor)
+//   }
+// }
+
+// // // Hide popup on outside click
+// // document.addEventListener('click', (e: MouseEvent) => {
+// //   const popup = document.getElementById('colorPopup')
+// //   if (popup === null) return
+
+// //   if (!popup.contains(e.target as Node) && popup.style.display === 'block') {
+// //     popup.style.display = 'none'
+// //   }
+// // })
+
+const basicColors: string[] = ['#FF0000', '#00FF00', '#0000FF', '#FFA500', '#800080', '#000000', '#808080', '#FFFFFF']
+
+/**
+ * Show minimal color picker.
+ * @param x Horizontal position
+ * @param y Vertical position
+ * @param onSelect Callback immediately called with selected color
+ */
+export function showColorPopup (x: number, y: number, onSelect: (color: string) => void): void {
+  const popup = document.getElementById('colorPopup')
+  if (popup === null) return
+
+  popup.innerHTML = ''
+  popup.style.position = 'absolute'
+  popup.style.left = `${x}px`
+  popup.style.top = `${y}px`
+  popup.style.display = 'flex' // Horizontal layout
+  popup.style.gap = '4px'
+
+  basicColors.forEach(color => {
+    const swatch = document.createElement('div')
+    swatch.style.width = '14px'
+    swatch.style.height = '14px'
+    swatch.style.backgroundColor = color
+    swatch.style.border = '1px solid #aaa'
+    swatch.style.borderRadius = '2px'
+    swatch.style.cursor = 'pointer'
+
+    swatch.addEventListener('click', () => {
+      onSelect(color)
+      popup.style.display = 'none'
+    })
+
+    popup.appendChild(swatch)
+  })
+
+  // Delay adding outside click listener
+  setTimeout((): void => {
+    const outsideClickHandler = (e: MouseEvent): void => {
+      if (!popup.contains(e.target as Node)) {
+        popup.style.display = 'none'
+        document.removeEventListener('click', outsideClickHandler)
+      }
+    }
+    document.addEventListener('click', outsideClickHandler)
+  }, 0)
+}
 
 export default class OverlayView<C extends Axis = YAxis> extends View<C> {
   constructor (widget: DrawWidget<DrawPane<C>>) {
@@ -179,6 +306,12 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
         figureIndex: -1,
         figure: null
       })
+      eval(`Object.keys(localStorage).forEach(key => {
+        // console.log(overlay?.id)
+        if (key.includes(overlay?.id)) {
+          localStorage.setItem(key, JSON.stringify(overlay));
+        }
+      })`)
       return false
     }).registerEvent('pressedMouseMoveEvent', event => {
       const { overlay, figureType, figureIndex, figure } = chartStore.getPressedOverlayInfo()
@@ -245,6 +378,8 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
   private _processOverlaySelectedEvent (overlay: OverlayImp, figure: Nullable<OverlayFigure>, event: MouseTouchEvent): boolean {
     if (checkOverlayFigureEvent('onSelected', figure)) {
       overlay.onSelected?.({ chart: this.getWidget().getPane().getChart(), overlay, figure: figure ?? undefined, ...event })
+      // alert(`onSelected \n${figure} \n${event} \n${overlay} \n${this.getWidget().getPane().getChart()}`)
+      // eval('alert(`onSelected`)')
       return true
     }
     return false
@@ -315,8 +450,41 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
 
   private _figureMouseDoubleClickEvent (overlay: OverlayImp, _figureType: EventOverlayInfoFigureType, _figureIndex: number, figure: OverlayFigure): MouseTouchEventCallback {
     return (event: MouseTouchEvent) => {
+      const pageX = event.pageX
+      const pagey = event.pageY
       if (checkOverlayFigureEvent('onDoubleClick', figure)) {
         overlay.onDoubleClick?.({ ...event, chart: this.getWidget().getPane().getChart(), figure, overlay })
+        // showColorPopup(event.pageX, event.pageY, )
+        showColorPopup(pageX, pagey, (colorSelected) => {
+          console.log('Color selected:', colorSelected)
+          // Update overlay color, e.g.:
+          overlay.styles = {
+            line: {
+              // 'solid' | 'dashed'
+              style: 'solid',
+              smooth: false,
+              color: colorSelected,
+              size: 1,
+              dashedValue: [4, 4]
+            },
+            point: {
+              color: colorSelected,
+              borderColor: 'rgba(207, 136, 23, 0.35)',
+              borderSize: 1,
+              radius: 5,
+              activeColor: colorSelected,
+              activeBorderColor: 'rgba(207, 136, 23, 0.35)',
+              activeBorderSize: 3,
+              activeRadius: 5
+            }
+          }
+          eval(`Object.keys(localStorage).forEach(key => {
+            // console.log(overlay?.id)
+            if (key.includes(overlay?.id)) {
+              localStorage.setItem(key, JSON.stringify(overlay));
+            }
+          })`)
+        })
         return !overlay.isDrawing()
       }
       return false
@@ -332,6 +500,13 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
         if (!prevented) {
           this.getWidget().getPane().getChart().getChartStore().removeOverlay(overlay)
         }
+        eval(`
+        //remove localStorage keys by condition
+        Object.keys(localStorage).forEach(key => {
+          if (key.includes(overlay?.id)) {
+            localStorage.removeItem(key);
+          }
+        });`)
         return !overlay.isDrawing()
       }
       return false
