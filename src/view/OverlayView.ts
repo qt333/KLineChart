@@ -39,6 +39,70 @@ import DrawPane from '../pane/DrawPane'
 
 import View from './View'
 
+interface ColorEntry {
+  hex: string
+  rgba: string
+};
+
+const colorMap: ColorEntry[] = [
+  { hex: '#FF0000', rgba: 'rgba(255, 0, 0, 1)' },       // Red
+  { hex: '#00FF00', rgba: 'rgba(0, 255, 0, 1)' },       // Green
+  { hex: '#0000FF', rgba: 'rgba(0, 0, 255, 1)' },       // Blue
+  { hex: '#FFA500', rgba: 'rgba(255, 165, 0, 1)' },     // Orange
+  { hex: '#800080', rgba: 'rgba(128, 0, 128, 1)' },     // Purple
+  { hex: '#000000', rgba: 'rgba(0, 0, 0, 1)' },         // Black
+  { hex: '#808080', rgba: 'rgba(128, 128, 128, 1)' },   // Gray
+  { hex: '#FFFFFF', rgba: 'rgba(255, 255, 255, 1)' },   // White
+  { hex: '#F92855', rgba: 'rgba(249, 40, 85, 1)' },     // color.RED
+  { hex: '#2DC08E', rgba: 'rgba(45, 192, 142, 1)' },    // color.GREEN
+  { hex: '#1677FF', rgba: 'rgba(22, 119, 255, 1)' }     // color.BLUE
+]
+/**
+ * Show minimal color picker.
+ * @param x Horizontal position
+ * @param y Vertical position
+ * @param onSelect Callback immediately called with selected color
+ */
+export function showColorPopup (x: number, y: number, onSelect: (color: string) => void): void {
+  const popup = document.getElementById('colorPopup')
+  if (popup === null) return
+
+  popup.innerHTML = ''
+  popup.style.position = 'absolute'
+  popup.style.left = `${x}px`
+  popup.style.top = `${y}px`
+  popup.style.display = 'flex' // Horizontal layout
+  popup.style.gap = '4px'
+
+  colorMap.forEach(color => {
+    const swatch = document.createElement('div')
+    swatch.style.width = '15px'
+    swatch.style.height = '15px'
+    swatch.style.backgroundColor = color.hex
+    swatch.style.border = '1px solid #aaa'
+    swatch.style.borderRadius = '2px'
+    swatch.style.cursor = 'pointer'
+
+    swatch.addEventListener('click', () => {
+      onSelect(color.rgba)
+      popup.style.display = 'none'
+    })
+
+    popup.appendChild(swatch)
+  })
+
+  // Delay adding outside click listener
+  setTimeout((): void => {
+    const outsideClickHandler = (e: MouseEvent): void => {
+      if (!popup.contains(e.target as Node)) {
+        popup.style.display = 'none'
+        document.removeEventListener('click', outsideClickHandler)
+      }
+    }
+    document.addEventListener('click', outsideClickHandler)
+  }, 0)
+}
+
 export default class OverlayView<C extends Axis = YAxis> extends View<C> {
   constructor (widget: DrawWidget<DrawPane<C>>) {
     super(widget)
@@ -153,6 +217,13 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
       if (instance !== null) {
         instance.onPressedMoveEnd?.({ overlay: instance, figureKey, figureIndex, ...event })
       }
+      eval(`
+        Object.keys(localStorage).forEach(key => {
+        // console.log(instance?.id)
+          if (key.includes(instance?.id)) {
+            localStorage.setItem(key, JSON.stringify(instance));
+          }
+        })`)
       overlayStore.setPressedInstanceInfo({
         paneId, instance: null, figureType: EventOverlayInfoFigureType.None, figureKey: '', figureIndex: -1, attrsIndex: -1
       })
@@ -265,7 +336,61 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
 
   private _figureMouseDoubleClickEvent (overlay: Overlay, _figureType: EventOverlayInfoFigureType, figureKey: string, figureIndex: number, _attrsIndex: number): MouseTouchEventCallback {
     return (event: MouseTouchEvent) => {
+      const pageX = event.pageX
+      const pageY = event.pageY
       overlay.onDoubleClick?.({ ...event, figureIndex, figureKey, overlay })
+      // showColorPopup(event.pageX, event.pageY, )
+      showColorPopup(pageX, pageY, (colorSelected) => {
+        console.log('Color selected:', colorSelected)
+        // Update overlay color, e.g.:
+        overlay.styles = {
+          line: {
+            // 'solid' | 'dashed'
+            style: 'solid',
+            smooth: false,
+            color: colorSelected,
+            size: 1,
+            dashedValue: [4, 4]
+          },
+          rect: {
+            // 'fill' | 'stroke' | 'stroke_fill'
+            style: 'fill',
+            color: colorSelected.replace('1)', '0.35)'),
+            borderColor: colorSelected,
+            borderSize: 1,
+            borderRadius: 0,
+            // 'solid' | 'dashed'
+            borderStyle: 'solid',
+            borderDashedValue: [2, 2]
+          },
+          polygon: {
+            // 'fill' | 'stroke' | 'stroke_fill'
+            style: 'fill',
+            color: colorSelected.replace('1)', '0.35)'),
+            borderColor: colorSelected,
+            borderSize: 1,
+            // 'solid' | 'dashed'
+            borderStyle: 'solid',
+            borderDashedValue: [2, 2]
+          },
+          point: {
+            color: colorSelected,
+            borderColor: colorSelected.replace('1)', '0.35)'),
+            borderSize: 1,
+            radius: 5,
+            activeColor: colorSelected,
+            activeBorderColor: colorSelected.replace('1)', '0.35)'),
+            activeBorderSize: 3,
+            activeRadius: 5
+          }
+        }
+        eval(`Object.keys(localStorage).forEach(key => {
+          // console.log(overlay?.id)
+          if (key.includes(overlay?.id)) {
+            localStorage.setItem(key, JSON.stringify(overlay));
+          }
+        })`)
+      })
       return true
     }
   }
@@ -277,6 +402,13 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
         const overlayStore = pane.getChart().getChartStore().getOverlayStore()
         overlayStore.removeInstance(overlay)
       }
+      eval(`
+        //remove localStorage keys by condition
+        Object.keys(localStorage).forEach(key => {
+          if (key.includes(overlay?.id)) {
+            localStorage.removeItem(key);
+          }
+        });`)
       return true
     }
   }

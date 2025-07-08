@@ -14,5 +14,7 @@ module.exports = {
   overrides: [
   ],
   rules: {
+    'no-multi-spaces': 'off',
+    'no-eval': 'off'
   }
 }
