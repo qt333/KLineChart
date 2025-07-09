@@ -6,7 +6,7 @@ export default [
   ...new FlatCompat().extends('eslint-config-standard'),
   {
     ...love,
-    files: ['src/**/*.js', 'src/**/*.ts']
+    // files: ['src/**/*.js', 'src/**/*.ts']
   },
   {
     plugins: {
@@ -17,7 +17,8 @@ export default [
       'scripts/**/*',
       'dist/**/*',
       'docs/**/*',
-      'index.js'
+      'index.js',
+      'src/*'
     ],
     rules: {
       'file-progress/activate': 1,
@@ -32,7 +33,8 @@ export default [
       'no-eval': 'off',
       'no-multi-spaces': 'off',
       'semi': 'off',
-      'comma-dangle': 'off'
+      'comma-dangle': 'off',
+      'no-trailing-spaces': 'off'
     }
   }
 ]
