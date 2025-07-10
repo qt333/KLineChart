@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-import Nullable from '../../common/Nullable'
+import type Nullable from '../../common/Nullable'
 
-import OverlayImp, { OverlayTemplate, OverlayConstructor, OverlayInnerConstructor } from '../../component/Overlay'
+import OverlayImp, { type OverlayTemplate, type OverlayConstructor, type OverlayInnerConstructor } from '../../component/Overlay'
 
 import fibonacciLine from './fibonacciLine'
 import horizontalRayLine from './horizontalRayLine'
@@ -29,6 +29,7 @@ import straightLine from './straightLine'
 import verticalRayLine from './verticalRayLine'
 import verticalSegment from './verticalSegment'
 import verticalStraightLine from './verticalStraightLine'
+import ruler from './ruler'
 
 import simpleAnnotation from './simpleAnnotation'
 import simpleTag from './simpleTag'
@@ -39,14 +40,14 @@ const extensions = [
   fibonacciLine, horizontalRayLine, horizontalSegment, horizontalStraightLine,
   parallelStraightLine, priceChannelLine, priceLine, rayLine, segment,
   straightLine, verticalRayLine, verticalSegment, verticalStraightLine,
-  simpleAnnotation, simpleTag
+  simpleAnnotation, simpleTag, ruler
 ]
 
 extensions.forEach((template: OverlayTemplate) => {
   overlays[template.name] = OverlayImp.extend(template)
 })
 
-function registerOverlay (template: OverlayTemplate): void {
+function registerOverlay<E = unknown> (template: OverlayTemplate<E>): void {
   overlays[template.name] = OverlayImp.extend(template)
 }
 

@@ -6,3 +6,4 @@ types/
 scripts/
 .eslintrc.cjs
 index.js
+src/
