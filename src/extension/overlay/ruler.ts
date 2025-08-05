@@ -199,12 +199,14 @@ const positionTemplate: Omit<
       chart.removeOverlay({ id: overlay.id });
       overlayClickedOff = false;
       document.removeEventListener('click', handleClick);
+      document.removeEventListener('contextmenu', handleClick);
     };
     overlayClickedOff = true;
     // Slight delay to avoid removing overlay on the same click that finished the draw
     setTimeout(() => {
       // console.log(5)
       document.addEventListener('click', handleClick, { once: true });
+      document.addEventListener('contextmenu', handleClick, { once: true });
     }, 0); 
     return true 
   }
