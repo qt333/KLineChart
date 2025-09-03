@@ -53,7 +53,7 @@ import { PaneIdConstants } from './pane/types'
 import type Chart from './Chart'
 
 const BarSpaceLimitConstants = {
-  MIN: 1,
+  MIN: 0.1,
   MAX: 50
 }
 

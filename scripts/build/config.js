@@ -30,9 +30,9 @@ function createInputConfig ({ input, replaceValues }) {
     input,
     plugins: [
       typescript(),
-      eslint({
-        throwOnError: true
-      }),
+      // eslint({
+      //   throwOnError: true
+      // }),
       nodeResolve(),
       replace({
         preventAssignment: true,

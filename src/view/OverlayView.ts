@@ -33,6 +33,9 @@ import type DrawPane from '../pane/DrawPane'
 
 import View from './View'
 
+import IndexedDBHelper from '../db'
+
+const db = new IndexedDBHelper()
 // const basicColors: string[] = ['#FF0000', '#00FF00', '#0000FF', '#FFA500', '#800080', '#000000', '#808080', '#FFFFFF']
 interface ColorEntry {
   hex: string;
@@ -244,12 +247,22 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
         figureIndex: -1,
         figure: null
       })
-      eval(`Object.keys(localStorage).forEach(key => {
+      // eval(`Object.keys(localStorage).forEach(key => {
+      //   // console.log(overlay?.id)
+      //   if (key.includes(overlay?.id)) {
+      //     localStorage.setItem(key, JSON.stringify(overlay));
+      //   }
+      // })`)
+      db.getAllKeys().then(keys => {
+        keys.forEach(key => {
         // console.log(overlay?.id)
-        if (key.includes(overlay?.id)) {
-          localStorage.setItem(key, JSON.stringify(overlay));
-        }
-      })`)
+          if (typeof key != "string") return
+          if (!overlay) return
+          if (key.includes(overlay.id)) {
+            db.set(key, JSON.stringify(overlay));
+          }
+        })
+      })
       return false
     }).registerEvent('pressedMouseMoveEvent', event => {
       const { overlay, figureType, figureIndex, figure } = chartStore.getPressedOverlayInfo()
@@ -437,12 +450,29 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
               activeRadius: 5
             }
           }
-          eval(`Object.keys(localStorage).forEach(key => {
+          // eval(`Object.keys(localStorage).forEach(key => {
+          //   // console.log(overlay?.id)
+          //   if (key.includes(overlay?.id)) {
+          //     localStorage.setItem(key, JSON.stringify(overlay));
+          //   }
+          // })`)
+          db.getAllKeys().then(keys => {
+            keys.forEach(key => {
             // console.log(overlay?.id)
-            if (key.includes(overlay?.id)) {
-              localStorage.setItem(key, JSON.stringify(overlay));
-            }
-          })`)
+              if (typeof key != "string") return
+              if (!overlay) return
+              if (key.includes(overlay.id)) {
+                db.set(key, JSON.stringify(overlay));
+              }
+            })
+          })
+          // eval(`
+          //   db.getAllKeys().forEach(key => {
+          //   // console.log(overlay?.id)
+          //     if (key.includes(overlay?.id)) {
+          //       db.set(key, JSON.stringify(overlay));
+          //     }
+          //   })`)
         })
         return !overlay.isDrawing()
       }
@@ -459,13 +489,23 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
         if (!prevented) {
           this.getWidget().getPane().getChart().getChartStore().removeOverlay(overlay)
         }
-        eval(`
-        //remove localStorage keys by condition
-        Object.keys(localStorage).forEach(key => {
-          if (key.includes(overlay?.id)) {
-            localStorage.removeItem(key);
-          }
-        });`)
+        // eval(`
+        // //remove localStorage keys by condition
+        // Object.keys(localStorage).forEach(key => {
+        //   if (key.includes(overlay?.id)) {
+        //     localStorage.removeItem(key);
+        //   }
+        // });`)
+        db.getAllKeys().then(keys => {
+          keys.forEach(key => {
+          // console.log(overlay?.id)
+            if (typeof key != "string") return
+            if (!overlay) return
+            if (key.includes(overlay.id)) {
+              db.del(key);
+            }
+          })
+        })
         return !overlay.isDrawing()
       }
       return false
